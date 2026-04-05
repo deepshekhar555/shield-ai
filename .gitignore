@@ -1,0 +1,44 @@
+# Shield AI — .gitignore
+
+# ── SECRETS: NEVER commit these ──────────────────────────────
+.env
+
+# ── Python ────────────────────────────────────────────────────
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# ── Virtual environment ───────────────────────────────────────
+.venv/
+venv/
+env/
+ENV/
+
+# ── Database (Railway uses fresh DB each deploy) ──────────────
+shield_ai.db
+
+# ── Large media files ─────────────────────────────────────────
+*.mp4
+*.avi
+*.mov
+
+# ── Large Kaggle datasets (not needed for deploy) ────────────
+data/creditcard.csv
+creditcard.csv
+
+# ── Models are INCLUDED in git (Railway needs them) ──────────
+# fraud_model.joblib     ← DO NOT gitignore
+# scaler_amount.joblib   ← DO NOT gitignore
+# scaler_time.joblib     ← DO NOT gitignore
+
+# ── IDE ───────────────────────────────────────────────────────
+.vscode/
+.idea/
+*.code-workspace
+
+# ── OS ────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini

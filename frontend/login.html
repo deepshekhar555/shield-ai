@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enterprise Security — Login</title>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#4f46e5">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="Shield AI">
+    <style>
+        :root {
+            --primary: #6366f1;
+            --bg: #030712;
+            --surface: rgba(17, 24, 39, 0.8);
+            --border: rgba(255, 255, 255, 0.08);
+            --text: #f8fafc;
+            --text-muted: #94a3b8;
+        }
+        * { margin:0; padding:0; box-sizing:border-box; font-family:'Inter', sans-serif; }
+        body { background: var(--bg); color: var(--text); height: 100vh; display: flex; align-items: center; justify-content: center; }
+        .login-card { background: var(--surface); border: 1px solid var(--border); padding: 48px; border-radius: 32px; width: 400px; backdrop-filter: blur(20px); text-align: center; }
+        .logo { font-size: 1.5rem; font-weight: 800; color: var(--primary); margin-bottom: 32px; display: flex; align-items: center; justify-content: center; gap: 12px; }
+        h1 { font-size: 1.2rem; font-weight: 700; margin-bottom: 8px; }
+        p { color: var(--text-muted); font-size: 13px; margin-bottom: 32px; }
+        .input-group { position: relative; margin-bottom: 24px; text-align: left; }
+        .input-group label { display: block; font-size: 11px; font-weight: 700; text-transform: uppercase; margin-bottom: 8px; color: var(--text-muted); }
+        input { width: 100%; background: rgba(255,255,255,0.03); border: 1px solid var(--border); padding: 14px; border-radius: 12px; color: white; font-size: 14px; }
+        input:focus { border-color: var(--primary); outline: none; }
+        .btn-p { width: 100%; background: var(--primary); color: white; border: none; padding: 16px; border-radius: 12px; font-weight: 700; cursor: pointer; margin-top: 12px; }
+        .err { color: #f43f5e; font-size: 12px; margin-top: 16px; display: none; }
+    </style>
+</head>
+<body>
+    <div class="login-card">
+        <div class="logo">
+            <img src="shield_logo.png" style="width:40px; height:40px; border-radius:10px; box-shadow:0 0 15px rgba(99,102,241,0.3);">
+            SHIELD AI
+        </div>
+        <h1 id="formTitle">Enterprise Authorization</h1>
+        <p id="formSub">Sign in with your security credentials.</p>
+        
+        <form id="authForm">
+            <div id="nameGroup" class="input-group" style="display:none;">
+                <label>Full Name</label>
+                <input type="text" id="fullName" placeholder="John Doe">
+            </div>
+            <div class="input-group">
+                <label>Username / ID</label>
+                <input type="text" id="user" placeholder="deephalder" required>
+            </div>
+            <div class="input-group">
+                <label>Password</label>
+                <input type="password" id="pass" placeholder="••••••••" required>
+            </div>
+            <button type="submit" class="btn-p" id="subBtn">Authorized Login</button>
+            <div id="errMsg" class="err">Access Denied: Invalid Credentials.</div>
+            <p style="margin-top:24px; cursor:pointer; color:var(--primary); font-weight:700;" onclick="toggleMode()" id="modeToggle">New Administrator? Join Shield</p>
+        </form>
+    </div>
+
+    <script>
+        lucide.createIcons();
+        let isLogin = true;
+
+        function toggleMode() {
+            isLogin = !isLogin;
+            document.getElementById('formTitle').innerText = isLogin ? 'Enterprise Authorization' : 'Join Shield Network';
+            document.getElementById('formSub').innerText = isLogin ? 'Sign in with your security credentials.' : 'Create a new protection profile.';
+            document.getElementById('nameGroup').style.display = isLogin ? 'none' : 'block';
+            document.getElementById('subBtn').innerText = isLogin ? 'Authorized Login' : 'Register Account';
+            document.getElementById('modeToggle').innerText = isLogin ? 'New Administrator? Join Shield' : 'Already registered? Login Here';
+        }
+
+        document.getElementById('authForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const url = isLogin ? '/api/login' : '/api/register';
+            const payload = isLogin ? {
+                username: document.getElementById('user').value,
+                password: document.getElementById('pass').value
+            } : {
+                username: document.getElementById('user').value,
+                password: document.getElementById('pass').value,
+                name: document.getElementById('fullName').value
+            };
+
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(payload)
+            });
+
+            if (response.ok) {
+                if(isLogin) {
+                    const data = await response.json();
+                    localStorage.setItem('shield_token', data.token);
+                    localStorage.setItem('shield_user', data.name);
+                    localStorage.setItem('shield_id', payload.username);
+                    window.location.href = 'dashboard.html';
+                } else {
+                    alert("Registration Successful. Please login.");
+                    toggleMode();
+                }
+            } else {
+                document.getElementById('errMsg').style.display = 'block';
+                document.getElementById('errMsg').innerText = "Action Failed: Check credentials or user existing.";
+            }
+        });
+    </script>
+</body>
+</html>

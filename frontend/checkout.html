@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure Checkout | TechStore</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-hover: #4f46e5;
+            --bg: #f8fafc;
+            --card-bg: #ffffff;
+            --text-dark: #0f172a;
+            --text-light: #64748b;
+            --border: #e2e8f0;
+            --success: #10b981;
+            --error: #ef4444;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text-dark);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .checkout-wrapper {
+            width: 100%;
+            max-width: 440px;
+            background: var(--card-bg);
+            border-radius: 20px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            overflow: hidden;
+            border: 1px solid var(--border);
+        }
+
+        .checkout-header {
+            background: #1e293b;
+            padding: 32px;
+            color: white;
+            text-align: center;
+        }
+
+        .checkout-header h2 {
+            font-size: 20px;
+            font-weight: 700;
+            letter-spacing: -0.025em;
+        }
+
+        .checkout-header p {
+            color: #94a3b8;
+            font-size: 14px;
+            margin-top: 4px;
+        }
+
+        .checkout-body {
+            padding: 32px;
+        }
+
+        /* Input Styling */
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-light);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 8px;
+        }
+
+        .input-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .input-wrapper i {
+            position: absolute;
+            left: 14px;
+            color: var(--text-light);
+            width: 18px;
+            height: 18px;
+        }
+
+        .input-wrapper input {
+            width: 100%;
+            padding: 12px 12px 12px 42px;
+            border: 1.5px solid var(--border);
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: 500;
+            transition: all 0.2s;
+            color: var(--text-dark);
+        }
+
+        .input-wrapper input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+        }
+
+        .grid-half {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        /* Order Summary */
+        .order-summary {
+            background: #f1f5f9;
+            padding: 16px;
+            border-radius: 12px;
+            margin-bottom: 24px;
+            border: 1px solid var(--border);
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+
+        .summary-row.total {
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px dashed var(--border);
+            font-weight: 700;
+            font-size: 16px;
+            color: var(--text-dark);
+        }
+
+        .summary-row span:first-child { color: var(--text-light); }
+
+        .pay-button {
+            width: 100%;
+            background: var(--primary);
+            color: white;
+            padding: 16px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .pay-button:hover {
+            background: var(--primary-hover);
+            transform: translateY(-1px);
+        }
+
+        .pay-button:active {
+            transform: translateY(0);
+        }
+
+        .security-footer {
+            margin-top: 24px;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            color: var(--text-light);
+            font-size: 13px;
+        }
+
+        /* Result Overlays */
+        .overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(8px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+        }
+
+        .result-card {
+            background: white;
+            padding: 40px;
+            border-radius: 24px;
+            text-align: center;
+            width: 90%;
+            max-width: 360px;
+            animation: slideUp 0.3s ease-out;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .result-card i {
+            width: 64px;
+            height: 64px;
+            margin-bottom: 20px;
+        }
+
+        .result-card h3 {
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .result-card p {
+            color: var(--text-light);
+            font-size: 15px;
+            line-height: 1.5;
+            margin-bottom: 24px;
+        }
+
+        .result-card .btn-back {
+            display: inline-block;
+            background: var(--text-dark);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 10px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        /* Spinner */
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+        .spinner { animation: spin 0.8s linear infinite; }
+    </style>
+</head>
+<body>
+
+    <div class="checkout-wrapper">
+        <header class="checkout-header">
+            <h2>TechStore</h2>
+            <p>Secure Payment Portal</p>
+        </header>
+
+        <div class="checkout-body">
+            <!-- Order Details -->
+            <div class="order-summary">
+                <div class="summary-row">
+                    <span>Order #</span>
+                    <span>TS-92841</span>
+                </div>
+                <div class="summary-row">
+                    <span>Shipping</span>
+                    <span>Free</span>
+                </div>
+                <div class="summary-row total">
+                    <span>Total Amount</span>
+                    <span id="displayAmount">$149.62</span>
+                </div>
+            </div>
+
+            <!-- Card Information Only -->
+            <form id="paymentForm" onsubmit="handlePay(event)">
+                <div class="form-group">
+                    <label>Cardholder Name</label>
+                    <div class="input-wrapper">
+                        <i data-lucide="user"></i>
+                        <input type="text" id="custName" placeholder="Full Name" value="John Doe" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Card Number</label>
+                    <div class="input-wrapper">
+                        <i data-lucide="credit-card"></i>
+                        <input type="text" placeholder="0000 0000 0000 0000" value="4111 2222 3333 4444" required>
+                    </div>
+                </div>
+
+                <div class="grid-half">
+                    <div class="form-group">
+                        <label>Expiration</label>
+                        <div class="input-wrapper">
+                            <i data-lucide="calendar"></i>
+                            <input type="text" placeholder="MM/YY" value="12/28" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>CVC</label>
+                        <div class="input-wrapper">
+                            <i data-lucide="lock"></i>
+                            <input type="password" placeholder="***" value="123" required>
+                        </div>
+                    </div>
+                </div>
+
+                <button type="submit" class="pay-button" id="payBtn">
+                    <span id="btnText">Pay Securely</span>
+                </button>
+            </form>
+
+            <div class="security-footer">
+                <i data-lucide="shield-check" style="width: 16px; color: var(--success);"></i>
+                <span>SSL Secured & Verified by Shield AI</span>
+            </div>
+            
+            <a href="index.html" style="display: block; text-align: center; margin-top: 16px; font-size: 13px; color: var(--text-light); text-decoration: none;">
+                ← Back to Dashboard
+            </a>
+        </div>
+    </div>
+
+    <!-- Processing Overlay -->
+    <div class="overlay" id="loadingOverlay">
+        <div class="result-card">
+            <i data-lucide="refresh-cw" class="spinner" style="color: var(--primary);"></i>
+            <h3>Authorizing...</h3>
+            <p>We are verifying your transaction with the financial network.</p>
+        </div>
+    </div>
+
+    <!-- Success Overlay -->
+    <div class="overlay" id="successOverlay">
+        <div class="result-card">
+            <i data-lucide="check-circle" style="color: var(--success);"></i>
+            <h3>Payment Successful</h3>
+            <p>Your transaction was approved and your order is being processed.</p>
+            <a href="#" class="btn-back" onclick="closeOverlays()">Done</a>
+        </div>
+    </div>
+
+    <!-- Fraud Overlay -->
+    <div class="overlay" id="fraudOverlay">
+        <div class="result-card">
+            <i data-lucide="alert-octagon" style="color: var(--error);"></i>
+            <h3>Payment Failed</h3>
+            <p>Transaction declined. Please contact your bank for more information regarding this activity.</p>
+            <a href="#" class="btn-back" style="background: var(--error);" onclick="closeOverlays()">Retry</a>
+        </div>
+    </div>
+
+    <script>
+        lucide.createIcons();
+
+        // 🤫 HIDDEN TRIGGER LOGIC for Demo:
+        // Use a "Magic Name" or "Extreme Amount" to trigger fraud invisibly.
+        async function handlePay(e) {
+            e.preventDefault();
+            
+            const name = document.getElementById('custName').value.toLowerCase();
+            const loading = document.getElementById('loadingOverlay');
+            
+            // Show loading
+            loading.style.display = 'flex';
+
+            // SIMULATION: If Name contains "Hacker" or "Unknown" or "Tester", trigger fraud result
+            const isSuspicious = name.includes('hacker') || name.includes('unknown') || name.includes('test');
+            
+            // Background Data
+            const samples = {
+                legit: { Time: 0, Amount: 149.62, V1: -1.3598, V2: -0.0727, V3: 2.5363, V4: 1.3781, V5: -0.3383, V6: 0.4623, V7: 0.2396, V8: 0.0987, V9: 0.3637, V10: 0.0907, V11: -0.5516, V12: -0.6178, V13: -0.9913, V14: -0.3111, V15: 1.4681, V16: -0.4704, V17: 0.2079, V18: 0.0257, V19: 0.4039, V20: 0.2514, V21: -0.0183, V22: 0.2778, V23: -0.1104, V24: 0.0669, V25: 0.1285, V26: -0.1891, V27: 0.1335, V28: -0.0211 },
+                fraud: { Time: 406, Amount: 239.93, V1: -2.312, V2: 1.951, V3: -1.609, V4: 3.997, V5: -0.522, V6: -1.426, V7: -2.537, V8: 1.391, V9: -2.770, V10: -2.772, V11: 3.202, V12: -2.899, V13: -0.595, V14: -4.289, V15: 0.389, V16: -1.140, V17: -2.830, V18: -0.016, V19: 0.416, V20: 0.126, V21: 0.517, V22: -0.035, V23: -0.465, V24: 0.320, V25: 0.044, V26: 0.177, V27: 0.261, V28: -0.143 }
+            };
+
+            const payload = isSuspicious ? samples.fraud : samples.legit;
+
+            const user = localStorage.getItem('shield_id') || 'deephalder';
+            try {
+                const response = await fetch(`http://127.0.0.1:8000/predict?threshold=0.4&owner=${user}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                
+                const result = await response.json();
+                
+                // Add a small delay to simulate processing
+                setTimeout(() => {
+                    loading.style.display = 'none';
+                    if (result.prediction_result === 'FRAUD DETECTED') {
+                        document.getElementById('fraudOverlay').style.display = 'flex';
+                    } else {
+                        document.getElementById('successOverlay').style.display = 'flex';
+                    }
+                }, 1500);
+
+            } catch (err) {
+                loading.style.display = 'none';
+                alert('Connection to bank server lost.');
+            }
+        }
+
+        function closeOverlays() {
+            document.querySelectorAll('.overlay').forEach(el => el.style.display = 'none');
+        }
+    </script>
+</body>
+</html>

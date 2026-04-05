@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shield AI — Offline Demo Preview</title>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --primary-light: #818cf8;
+            --bg: #f8fafc;
+            --surface: #ffffff;
+            --text: #0f172a;
+            --text-muted: #64748b;
+            --danger: #ef4444;
+            --success: #10b981;
+            --border: rgba(0,0,0,0.07);
+            --card-shadow: 0 10px 25px -5px rgba(0,0,0,0.05), 0 8px 10px -6px rgba(0,0,0,0.05);
+        }
+        [data-theme="dark"] {
+            --bg: #0f172a;
+            --surface: #1e293b;
+            --text: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: rgba(255,255,255,0.08);
+        }
+        * { margin:0; padding:0; box-sizing:border-box; font-family:'Inter',sans-serif; }
+        body { background:var(--bg); color:var(--text); min-height:100vh; transition:background 0.3s,color 0.3s; }
+
+        /* ── HEADER ── */
+        .header {
+            position:fixed; top:0; width:100%; height:64px;
+            background:var(--surface); backdrop-filter:blur(10px);
+            border-bottom:1px solid var(--border);
+            padding:0 24px; display:flex; justify-content:space-between;
+            align-items:center; z-index:1000;
+            box-shadow:0 1px 6px rgba(0,0,0,0.06);
+        }
+        .logo-container { display:flex; align-items:center; gap:10px; font-weight:800; font-size:1.1rem; color:var(--primary); }
+        .logo-container img { width:32px; height:32px; border-radius:8px; box-shadow:0 0 10px rgba(99,102,241,0.25); }
+
+        /* ── CONTENT ── */
+        .content { padding:24px; padding-top:88px; max-width:600px; margin:0 auto; padding-bottom:100px; }
+
+        /* ── SAFETY GAUGE ── */
+        .safety-card {
+            background:linear-gradient(135deg,var(--primary),var(--primary-light));
+            color:white; padding:32px; border-radius:28px; text-align:center;
+            margin-bottom:24px; box-shadow:0 20px 40px rgba(79,70,229,0.25);
+        }
+        .gauge-container { position:relative; width:140px; height:140px; margin:0 auto 16px; }
+        .gauge-svg { transform:rotate(-90deg); width:100%; height:100%; }
+        .gauge-bg { fill:none; stroke:rgba(255,255,255,0.2); stroke-width:10; }
+        .gauge-progress { fill:none; stroke:white; stroke-width:10; stroke-linecap:round; stroke-dasharray:283; stroke-dashoffset:28; transition:stroke-dashoffset 1s ease-in-out; }
+        .gauge-value { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); font-size:2.2rem; font-weight:800; }
+        .safety-label { font-size:14px; font-weight:600; opacity:0.9; text-transform:uppercase; letter-spacing:1px; }
+
+        /* ── ACTION CARD ── */
+        .action-card {
+            background:var(--surface); padding:24px; border-radius:24px;
+            border:1px solid var(--border);
+            box-shadow:var(--card-shadow); margin-bottom:24px;
+            transition:background 0.3s;
+        }
+        .section-title { font-size:1rem; font-weight:700; margin-bottom:20px; display:flex; align-items:center; gap:10px; }
+
+        /* ── INPUTS ── */
+        .input-group { margin-bottom:16px; }
+        .input-group label { display:block; font-size:11px; font-weight:700; text-transform:uppercase; margin-bottom:8px; color:var(--text-muted); }
+        .input-box { width:100%; border:1px solid #e2e8f0; background:#fdfdfd; padding:16px; border-radius:16px; font-size:15px; transition:0.2s; color:var(--text); }
+        .input-box:focus { border-color:var(--primary); outline:none; box-shadow:0 0 0 4px rgba(79,70,229,0.1); }
+        [data-theme="dark"] .input-box { background:#0f172a; border-color:#334155; color:white; }
+
+        /* ── BUTTONS ── */
+        .main-btn {
+            width:100%; background:var(--primary); color:white; border:none;
+            padding:18px; border-radius:18px; font-size:16px; font-weight:700;
+            cursor:pointer; display:flex; align-items:center; justify-content:center;
+            gap:12px; transition:0.3s;
+        }
+        .main-btn:hover { transform:scale(1.02); background:#4338ca; }
+
+        /* ── TRANSACTIONS ── */
+        .txn-item { display:flex; align-items:center; justify-content:space-between; padding:16px; border-bottom:1px solid var(--border); }
+        .txn-icon { width:44px; height:44px; border-radius:14px; background:rgba(79,70,229,0.1); color:var(--primary); display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+        .txn-info { flex:1; margin-left:16px; }
+        .txn-name { font-weight:700; font-size:14px; }
+        .txn-time { font-size:12px; color:var(--text-muted); }
+        .txn-amt { font-weight:800; font-size:15px; }
+
+        /* ── NAV BAR ── */
+        .nav-bar {
+            position:fixed; bottom:0; left:0; right:0;
+            background:var(--surface); border-top:1px solid var(--border);
+            display:flex; justify-content:space-around; align-items:center;
+            padding:12px 0 24px; z-index:1000;
+            box-shadow:0 -5px 20px rgba(0,0,0,0.04);
+            transition:background 0.3s;
+        }
+        .tab-btn { display:flex; flex-direction:column; align-items:center; gap:4px; color:var(--text-muted); text-decoration:none; font-size:11px; font-weight:600; transition:0.3s; border:none; background:none; cursor:pointer; padding:4px 16px; border-radius:12px; }
+        .tab-btn i { width:24px; height:24px; }
+        .tab-btn.active { color:var(--primary); transform:translateY(-2px); }
+
+        /* ── VIEW TRANSITIONS ── */
+        .view { display:none; }
+        .view.active { display:block; animation:fadeIn 0.35s ease-out; }
+        @keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+
+        /* ── MODALS ── */
+        .modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.55); display:none; align-items:center; justify-content:center; padding:24px; z-index:2000; backdrop-filter:blur(4px); }
+        .modal-overlay.open { display:flex; }
+        .modal { background:var(--surface); padding:32px; border-radius:28px; width:100%; max-width:400px; box-shadow:0 25px 60px rgba(0,0,0,0.2); }
+
+        /* ── RESULT BOX ── */
+        #resBox { display:none; margin-top:24px; padding:16px; border-radius:16px; text-align:center; font-weight:800; font-size:14px; }
+        #sentryRes { display:none; margin-top:16px; padding:16px; border-radius:16px; text-align:center; font-weight:700; }
+        #idScanRes { display:none; margin-top:16px; padding:16px; border-radius:16px; text-align:center; font-weight:700; }
+
+        /* ── FRAUD LOCKDOWN ── */
+        #lockdown {
+            position:fixed; inset:0; background:rgba(220,38,38,0.96);
+            z-index:9999; display:none; align-items:center; justify-content:center;
+            backdrop-filter:blur(30px); flex-direction:column;
+        }
+        #lockdown.open { display:flex; }
+
+        /* ── THEME TOGGLE CHIP ── */
+        .chip-toggle { display:flex; align-items:center; gap:8px; cursor:pointer; font-size:13px; font-weight:600; color:var(--text-muted); background:none; border:none; }
+
+        /* ── SPINNER ── */
+        .spinner { animation:spin 1s linear infinite; }
+        @keyframes spin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+        @keyframes pulse { 0%{transform:scale(1);opacity:1} 50%{transform:scale(1.1);opacity:0.8} 100%{transform:scale(1);opacity:1} }
+
+        /* ── DARK ADAPTIVE ── */
+        [data-theme="dark"] .action-card { background:#1e293b; border-color:rgba(255,255,255,0.05); }
+        [data-theme="dark"] .txn-item { border-color:rgba(255,255,255,0.05); }
+        [data-theme="dark"] .nav-bar,.header { background:var(--surface); border-color:var(--border); }
+
+        /* ── BADGE ── */
+        .demo-badge {
+            position:fixed; top:72px; right:12px; background:rgba(99,102,241,0.9);
+            color:white; font-size:10px; font-weight:700; padding:4px 10px;
+            border-radius:20px; z-index:999; backdrop-filter:blur(4px);
+            letter-spacing:1px;
+        }
+
+        /* ── SETTINGS ROW ── */
+        .setting-row { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; }
+        .setting-row p { font-weight:700; font-size:14px; }
+        input[type=checkbox] { accent-color:var(--primary); width:20px; height:20px; cursor:pointer; }
+    </style>
+</head>
+<body>
+
+<!-- DEMO BADGE -->
+<div class="demo-badge">⚡ OFFLINE DEMO</div>
+
+<!-- HEADER -->
+<header class="header">
+    <div class="logo-container">
+        <div style="width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,#4f46e5,#818cf8);display:flex;align-items:center;justify-content:center;">
+            <i data-lucide="shield" style="width:18px;height:18px;color:white;"></i>
+        </div>
+        <span>SHIELD — PRO</span>
+    </div>
+    <div style="display:flex;gap:12px;align-items:center;">
+        <p id="userName" style="font-size:12px;font-weight:700;color:var(--text-muted);">Welcome, Deep</p>
+        <button onclick="toggleTheme()" class="chip-toggle" title="Toggle Theme">
+            <i data-lucide="moon" style="width:20px;"></i>
+        </button>
+    </div>
+</header>
+
+<!-- FRAUD LOCKDOWN OVERLAY -->
+<div id="lockdown">
+    <div style="text-align:center;color:white;padding:40px;">
+        <i data-lucide="shield-off" style="width:80px;height:80px;margin-bottom:24px;animation:pulse 1s infinite;"></i>
+        <h1 style="font-size:2.5rem;font-weight:800;margin-bottom:8px;">THREAT BLOCKED</h1>
+        <p style="font-size:1.1rem;opacity:0.9;margin-bottom:32px;">UNAUTHORIZED CLUSTER DETECTED. TRANSACTION VOIDED BY AI.</p>
+        <button onclick="document.getElementById('lockdown').classList.remove('open')"
+            style="background:white;color:#dc2626;font-weight:800;border:none;padding:18px 48px;border-radius:40px;font-size:16px;cursor:pointer;">
+            Dismiss Lockdown
+        </button>
+    </div>
+</div>
+
+<!-- SUPPORT MODAL -->
+<div id="helpModal" class="modal-overlay">
+    <div class="modal">
+        <h2>Support Center</h2>
+        <p style="margin:16px 0;color:var(--text-muted);font-size:13px;">Our deep-learning nodes are monitoring your wallet 24/7.</p>
+        <button class="main-btn" onclick="document.getElementById('helpModal').classList.remove('open')">Close</button>
+        <p style="text-align:center;margin-top:16px;font-size:11px;">Version 2.5 (Enterprise)</p>
+    </div>
+</div>
+
+<!-- MAIN CONTENT -->
+<main class="content">
+
+    <!-- VIEW: DASHBOARD (OVERVIEW) -->
+    <div id="v-overview" class="view active">
+        <div class="safety-card">
+            <div class="gauge-container">
+                <svg class="gauge-svg" viewBox="0 0 100 100">
+                    <circle class="gauge-bg" cx="50" cy="50" r="45"></circle>
+                    <circle id="gaugeFill" class="gauge-progress" cx="50" cy="50" r="45"></circle>
+                </svg>
+                <div class="gauge-value" id="safetyVal">98</div>
+            </div>
+            <p class="safety-label">Live Safety Score</p>
+        </div>
+
+        <div class="action-card" style="background:rgba(99,102,241,0.08);border:1px solid var(--primary);">
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+                <div>
+                    <p style="font-size:11px;font-weight:700;color:var(--primary);">AI SHIELD STATUS: ONLINE</p>
+                    <p id="securityTip" style="font-size:13px;font-weight:600;margin-top:4px;">"Scanning transaction clusters for real-time fraud mitigation."</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-title" style="margin-top:24px;">Recent Activity</div>
+        <div id="txn-list" style="margin-bottom:80px;"></div>
+    </div>
+
+    <!-- VIEW: AUDIT (NEURAL SCANNER) -->
+    <div id="v-verify" class="view">
+        <div class="section-title">Neural Card Auditor</div>
+        <div class="action-card" style="margin-bottom:24px;background:var(--primary);color:white;border:none;text-align:center;cursor:pointer;" onclick="simulateScan()">
+            <i data-lucide="camera" style="width:32px;height:32px;margin-bottom:12px;"></i>
+            <p style="font-weight:800;font-size:14px;">NEURAL SCAN (REAL-TIME)</p>
+            <p style="font-size:11px;opacity:0.8;">Analyze physical card via AI Vision.</p>
+        </div>
+        <div class="action-card">
+            <form id="auditForm">
+                <div class="input-group">
+                    <label>Extracted Audit Amount ($)</label>
+                    <input type="number" step="0.01" id="amt" class="input-box" placeholder="Enter amount to audit..." required>
+                </div>
+                <button type="submit" class="main-btn">
+                    <i data-lucide="shield-check"></i> Run Neural Audit
+                </button>
+                <div id="resBox"></div>
+            </form>
+        </div>
+    </div>
+
+    <!-- VIEW: SENTRY (MERCHANT) -->
+    <div id="v-sentry" class="view">
+        <div class="section-title">Merchant Link Sentinel</div>
+        <div class="action-card">
+            <div class="input-group">
+                <label>Merchant Website URL</label>
+                <input type="text" id="urlInput" class="input-box" placeholder="e.g. amazon.com or cheap-iphones.win">
+            </div>
+            <button class="main-btn" onclick="auditMerchant()">
+                <i data-lucide="globe"></i> Audit Merchant Trust
+            </button>
+            <div id="sentryRes"></div>
+        </div>
+        <div class="section-title" style="margin-top:32px;">Identity Leak Guard</div>
+        <div class="action-card">
+            <button class="main-btn" onclick="runIdentityScan()" style="background:rgba(239,68,68,0.1);color:var(--danger);border:1.5px solid var(--danger);">
+                <i data-lucide="alert-triangle"></i> Run Identity Scan
+            </button>
+            <div id="idScanRes"></div>
+        </div>
+    </div>
+
+    <!-- VIEW: STATS -->
+    <div id="v-stats" class="view">
+        <div class="section-title">Risk Telemetry Trends</div>
+        <div class="action-card" style="height:320px;">
+            <canvas id="threatChart"></canvas>
+        </div>
+    </div>
+
+    <!-- VIEW: CONFIG -->
+    <div id="v-config" class="view">
+        <div class="section-title">Security Center</div>
+        <div class="action-card">
+            <div class="setting-row">
+                <div><p>Real-Time Shield</p><p style="font-size:12px;color:var(--text-muted);margin-top:2px;">Continuous transaction monitoring</p></div>
+                <input type="checkbox" checked>
+            </div>
+            <div class="setting-row">
+                <div><p>Dark Operations Mode</p><p style="font-size:12px;color:var(--text-muted);margin-top:2px;">Switch display theme</p></div>
+                <input type="checkbox" id="themeToggle" onchange="toggleTheme()">
+            </div>
+            <div class="setting-row" style="margin-bottom:0;">
+                <div><p>AI Notifications</p><p style="font-size:12px;color:var(--text-muted);margin-top:2px;">Alert on fraud detection</p></div>
+                <input type="checkbox" checked>
+            </div>
+        </div>
+        <button class="main-btn" onclick="alert('✅ Audit log exported (demo mode)')">
+            <i data-lucide="download"></i> Download Audit History
+        </button>
+    </div>
+
+</main>
+
+<!-- BOTTOM NAV -->
+<nav class="nav-bar">
+    <button class="tab-btn active" id="t-overview" onclick="navigate('overview')"><i data-lucide="wallet"></i></button>
+    <button class="tab-btn" id="t-verify" onclick="navigate('verify')"><i data-lucide="camera"></i></button>
+    <button class="tab-btn" id="t-sentry" onclick="navigate('sentry')"><i data-lucide="globe"></i></button>
+    <button class="tab-btn" id="t-stats" onclick="navigate('stats')"><i data-lucide="bar-chart-3"></i></button>
+    <button class="tab-btn" id="t-config" onclick="navigate('config')"><i data-lucide="user"></i></button>
+</nav>
+
+<script>
+lucide.createIcons();
+
+// ── MOCK DATA ──
+const mockAlerts = [
+    { id: 3, time: "08:14:22", amt: 5000.00, conf: 97.4, status: "FLAGGED" },
+    { id: 2, time: "07:55:11", amt: 1299.99, conf: 84.2, status: "FLAGGED" },
+    { id: 1, time: "06:30:05", amt: 879.50,  conf: 76.1, status: "FLAGGED" },
+];
+let db = { history: [
+    { prob: 0.97, isFraud: true },
+    { prob: 0.12, isFraud: false },
+    { prob: 0.84, isFraud: true },
+    { prob: 0.08, isFraud: false },
+    { prob: 0.76, isFraud: true },
+] };
+
+const tips = [
+    "Neural Scanner extracts card data clusters in real-time.",
+    "Enabled Bio-Auth for a 100% Wallet Safety Score.",
+    "Shield AI has prevented 153 real-time frauds today.",
+    "Report unknown transactions in the Support Center.",
+];
+
+let threatChart = null;
+
+// ── NAVIGATION ──
+function navigate(id) {
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+    document.getElementById('v-' + id).classList.add('active');
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('t-' + id).classList.add('active');
+    if (id === 'overview') renderAlerts();
+    if (id === 'stats') renderChart();
+}
+
+// ── RENDER ALERTS ──
+function renderAlerts() {
+    const list = document.getElementById('txn-list');
+    list.innerHTML = '';
+    mockAlerts.forEach(item => {
+        const div = document.createElement('div');
+        div.className = 'txn-item';
+        div.innerHTML = `
+            <div class="txn-icon"><i data-lucide="${item.id % 2 === 0 ? 'shopping-bag' : 'credit-card'}"></i></div>
+            <div class="txn-info"><p class="txn-name">Blocked Alert #${item.id}</p><p class="txn-time">${item.time} Today</p></div>
+            <p class="txn-amt" style="color:var(--danger);">$${item.amt.toFixed(2)}</p>
+        `;
+        list.appendChild(div);
+    });
+    lucide.createIcons();
+    updateScore(mockAlerts.length);
+}
+
+// ── SAFETY GAUGE ──
+function updateScore(threatCount) {
+    const score = Math.max(30, 98 - (threatCount * 7));
+    document.getElementById('safetyVal').innerText = score;
+    const circle = document.getElementById('gaugeFill');
+    const circumference = 2 * Math.PI * 45;
+    circle.style.strokeDashoffset = circumference - (score / 100) * circumference;
+    circle.style.stroke = score > 80 ? '#10b981' : (score > 50 ? '#f59e0b' : '#ef4444');
+}
+
+// ── MOCK FRAUD AUDIT ──
+document.getElementById('auditForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const amount = parseFloat(document.getElementById('amt').value);
+    const box = document.getElementById('resBox');
+    box.style.display = 'block';
+    box.style.background = 'rgba(99,102,241,0.1)';
+    box.style.color = 'var(--primary)';
+    box.innerText = '⚙️ SCANNING NEURAL CLUSTERS...';
+
+    await new Promise(r => setTimeout(r, 1500));
+
+    const isFraud = amount > 1000;
+    const prob = isFraud ? (0.75 + Math.random() * 0.24) : (Math.random() * 0.35);
+
+    if (isFraud) {
+        box.style.background = 'rgba(239,68,68,0.1)';
+        box.style.color = 'var(--danger)';
+        box.innerText = `🚨 FRAUD DETECTED — Confidence: ${(prob * 100).toFixed(1)}%`;
+        document.getElementById('lockdown').classList.add('open');
+        mockAlerts.unshift({ id: mockAlerts.length + 1, time: new Date().toTimeString().slice(0,8), amt: amount, conf: +(prob*100).toFixed(1), status: 'FLAGGED' });
+    } else {
+        box.style.background = 'rgba(16,185,129,0.1)';
+        box.style.color = 'var(--success)';
+        box.innerText = `✅ LEGITIMATE — Risk Score: ${(prob * 100).toFixed(1)}%`;
+    }
+
+    db.history.push({ prob, isFraud });
+    if (db.history.length > 7) db.history.shift();
+    if (threatChart) renderChart();
+    updateScore(mockAlerts.length);
+});
+
+// ── SCAN SIMULATION ──
+function simulateScan() {
+    const amount = (Math.random() > 0.7 ? 2000 + Math.random() * 3000 : 50 + Math.random() * 200).toFixed(2);
+    document.getElementById('amt').value = amount;
+    navigate('verify');
+    alert(`📷 Card scanned — Detected amount: $${amount}\nSubmit the form to run fraud analysis.`);
+}
+
+// ── MERCHANT AUDIT ──
+function auditMerchant() {
+    const url = document.getElementById('urlInput').value.toLowerCase().trim();
+    const res = document.getElementById('sentryRes');
+    res.style.display = 'block';
+
+    const trusted = ['amazon','apple','google','microsoft','paypal','netflix','flipkart','hdfc','sbi','icici','axis'];
+    const suspicious = ['free','win','lucky','prize','click','verify-now','secure-login','account-update'];
+
+    if (!url) {
+        res.style.background = 'rgba(245,158,11,0.1)'; res.style.color = '#f59e0b';
+        res.innerText = '⚠️ Please enter a URL to audit.';
+    } else if (trusted.some(d => url.includes(d)) && !suspicious.some(p => url.includes(p))) {
+        res.style.background = 'rgba(16,185,129,0.1)'; res.style.color = 'var(--success)';
+        res.innerText = '✅ TRUSTED MERCHANT';
+    } else if (suspicious.some(p => url.includes(p))) {
+        res.style.background = 'rgba(239,68,68,0.1)'; res.style.color = 'var(--danger)';
+        res.innerText = '🚨 HIGH RISK — LIKELY PHISHING';
+    } else {
+        res.style.background = 'rgba(245,158,11,0.1)'; res.style.color = '#f59e0b';
+        res.innerText = '⚠️ UNVERIFIED MERCHANT — Proceed with caution';
+    }
+}
+
+// ── IDENTITY SCAN ──
+function runIdentityScan() {
+    const res = document.getElementById('idScanRes');
+    res.style.display = 'block';
+    res.innerHTML = '<span style="animation:spin 1s linear infinite;display:inline-block;">⚙️</span> Scanning identity clusters...';
+    setTimeout(() => {
+        res.style.background = 'rgba(16,185,129,0.1)'; res.style.color = 'var(--success)';
+        res.innerText = '✅ IDENTITY SECURE — No breaches detected';
+    }, 2000);
+}
+
+// ── CHART ──
+function renderChart() {
+    const ctx = document.getElementById('threatChart');
+    if (!ctx) return;
+    if (threatChart) threatChart.destroy();
+    threatChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: db.history.map((_,i) => `T${i+1}`),
+            datasets: [{
+                label: 'Risk %',
+                data: db.history.map(e => +(e.prob * 100).toFixed(1)),
+                backgroundColor: db.history.map(e => e.isFraud ? '#ef4444' : '#6366f1'),
+                borderRadius: 8,
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: { beginAtZero:true, max:100, grid:{color:'rgba(128,128,128,0.1)'}, border:{display:false} },
+                x: { grid:{display:false}, border:{display:false} }
+            },
+            plugins: { legend:{display:false} }
+        }
+    });
+}
+
+// ── THEME ──
+function toggleTheme() {
+    const isDark = document.body.getAttribute('data-theme') === 'dark';
+    document.body.setAttribute('data-theme', isDark ? '' : 'dark');
+    const toggle = document.getElementById('themeToggle');
+    if (toggle) toggle.checked = !isDark;
+}
+
+// ── INIT ──
+document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('securityTip').innerText = tips[Math.floor(Math.random() * tips.length)];
+    renderAlerts();
+    lucide.createIcons();
+});
+</script>
+</body>
+</html>
