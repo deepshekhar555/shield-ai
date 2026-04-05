@@ -1,0 +1,87 @@
+🛡️ SHIELD AI v2.0 — SOCIAL MEDIA PROMOTION KIT 🛡️
+===================================================
+
+This file contains copy-paste ready posts for your project's launch.
+Choose the platform below and share your success!
+
+----------------------------------------
+🚀 PLATFORM 1: LINKEDIN (Long Form)
+----------------------------------------
+
+Topic: Bridging the gap between Machine Learning and Fintech.
+
+Post Content:
+
+Excited to finally unveil Shield AI v2.0! 🛡️💼
+
+Over the last few weeks, I’ve been working on a production-grade Credit Card Fraud Detection system. Most ML projects stay in a Jupyter Notebook, but I wanted to build something that actually works in the real world.
+
+Key Tech Stack:
+🧠 XGBoost — The "brain" behind the system, trained on 284k+ real transactions.
+⚖️ SMOTE + Tomek — Handled extreme class imbalance (only 0.17% fraud).
+⚡ FastAPI — High-performance backend with sub-50ms inference.
+💳 Razorpay Integration — Real-time fraud detection via payment webhooks.
+📱 PWA (Progressive Web App) — Installable on Android for mobile monitoring.
+
+This project taught me so much about data pipelines, security validation, and crafting a premium user experience. It’s now fully open-sourced on GitHub!
+
+Check it out here: [INSERT YOUR GITHUB LINK]
+
+#MachineLearning #Fintech #SoftwareEngineering #Python #XGBoost #CyberSecurity #BuildInPublic
+
+----------------------------------------
+🐦 PLATFORM 2: X / TWITTER (Short & Punchy)
+----------------------------------------
+
+Post Content:
+
+Stop fraud before it clears. 🛑💳
+
+Introducing Shield AI — An AI-powered fraud monitor for modern commerce.
+
+✅ 99.1% Accuracy (XGBoost)
+✅ Real-time Razorpay Webhooks
+✅ Mobile PWA Ready
+✅ Dark Mode Dashboard
+
+Built with #Python & #FastAPI. 
+
+Github: [INSERT YOUR GITHUB LINK]
+
+#MachineLearning #Code #Developer #Web3 #CyberSecurity
+
+----------------------------------------
+📦 PLATFORM 3: GITHUB (Repo Description)
+----------------------------------------
+
+Description:
+"🛡️ Shield AI: A premium, AI-powered credit card fraud detection system with real-time Razorpay integration, XGBoost backend, and PWA mobile-first design."
+
+Tags:
+fraud-detection, machine-learning, xgboost, fastapi, python, pwa, razorpay, security, dashboard, fintech
+
+----------------------------------------
+🎬 DEMO RECORDING PLAN (Visuals)
+----------------------------------------
+
+1. Start at the Dashboard (Dark Mode).
+2. Show the "Identify Threat" interface.
+3. Simulate a high-amount transaction (>₹50,000) from an "International" source to see the AI flag it in real-time.
+4. Show the Audit Log (CSV Export) to demonstrate the data trail.
+
+----------------------------------------
+📸 ASSET LIBRARY (Attached to your project)
+----------------------------------------
+I've already captured professional screenshots of YOUR app for you:
+
+1. Dashboard Landing: assets/promo/dashboard.png
+   - Best for: LinkedIn header or Twitter main image.
+   
+2. Fraud Alert Triggered: assets/promo/fraud_alert.png
+   - Best for: Proving the AI's effectiveness in a post gallery.
+
+----------------------------------------
+
+Good luck with the launch! 🚀
+- Your AI Coding Partner
+

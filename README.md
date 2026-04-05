@@ -1,5 +1,8 @@
 # 🛡️ Shield AI — Real-Time Credit Card Fraud Detection
 
+![Shield AI Dashboard](assets/promo/dashboard.png)
+
+
 [![FastAPI](https://img.shields.io/badge/FastAPI-2.0-009688?style=flat&logo=fastapi)](https://fastapi.tiangolo.com)
 [![XGBoost](https://img.shields.io/badge/XGBoost-ML-orange?style=flat)](https://xgboost.ai)
 [![Razorpay](https://img.shields.io/badge/Razorpay-Integrated-0D3C9E?style=flat)](https://razorpay.com)
@@ -20,6 +23,9 @@ A production-grade AI-powered credit card fraud detection system with a mobile-f
 - 🌙 **Dark/Light Mode** — System-aware theme switching
 - 📊 **Risk Telemetry** — Live chart of transaction risk probabilities
 - 📥 **Export Audit Trail** — Download fraud history as CSV
+
+![Fraud Alert Interface](assets/promo/fraud_alert.png)
+
 
 ---
 
