@@ -24,7 +24,7 @@ Key Tech Stack:
 📱 PWA (Progressive Web App) — Installable on Android for mobile monitoring.
 
 This project taught me so much about data pipelines, security validation, and crafting a premium user experience. It’s now fully open-sourced on GitHub!
-
+https://www.linkedin.com/analytics/creator/content/
 Check it out here: [INSERT YOUR GITHUB LINK]
 
 #MachineLearning #Fintech #SoftwareEngineering #Python #XGBoost #CyberSecurity #BuildInPublic
