@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -20,29 +21,117 @@
             --text: #f8fafc;
             --text-muted: #94a3b8;
         }
-        * { margin:0; padding:0; box-sizing:border-box; font-family:'Inter', sans-serif; }
-        body { background: var(--bg); color: var(--text); height: 100vh; display: flex; align-items: center; justify-content: center; }
-        .login-card { background: var(--surface); border: 1px solid var(--border); padding: 48px; border-radius: 32px; width: 400px; backdrop-filter: blur(20px); text-align: center; }
-        .logo { font-size: 1.5rem; font-weight: 800; color: var(--primary); margin-bottom: 32px; display: flex; align-items: center; justify-content: center; gap: 12px; }
-        h1 { font-size: 1.2rem; font-weight: 700; margin-bottom: 8px; }
-        p { color: var(--text-muted); font-size: 13px; margin-bottom: 32px; }
-        .input-group { position: relative; margin-bottom: 24px; text-align: left; }
-        .input-group label { display: block; font-size: 11px; font-weight: 700; text-transform: uppercase; margin-bottom: 8px; color: var(--text-muted); }
-        input { width: 100%; background: rgba(255,255,255,0.03); border: 1px solid var(--border); padding: 14px; border-radius: 12px; color: white; font-size: 14px; }
-        input:focus { border-color: var(--primary); outline: none; }
-        .btn-p { width: 100%; background: var(--primary); color: white; border: none; padding: 16px; border-radius: 12px; font-weight: 700; cursor: pointer; margin-top: 12px; }
-        .err { color: #f43f5e; font-size: 12px; margin-top: 16px; display: none; }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .login-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            padding: 48px;
+            border-radius: 32px;
+            width: 400px;
+            backdrop-filter: blur(20px);
+            text-align: center;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--primary);
+            margin-bottom: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+        }
+
+        h1 {
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        p {
+            color: var(--text-muted);
+            font-size: 13px;
+            margin-bottom: 32px;
+        }
+
+        .input-group {
+            position: relative;
+            margin-bottom: 24px;
+            text-align: left;
+        }
+
+        .input-group label {
+            display: block;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+            color: var(--text-muted);
+        }
+
+        input {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border);
+            padding: 14px;
+            border-radius: 12px;
+            color: white;
+            font-size: 14px;
+        }
+
+        input:focus {
+            border-color: var(--primary);
+            outline: none;
+        }
+
+        .btn-p {
+            width: 100%;
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 16px;
+            border-radius: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            margin-top: 12px;
+        }
+
+        .err {
+            color: #f43f5e;
+            font-size: 12px;
+            margin-top: 16px;
+            display: none;
+        }
     </style>
 </head>
+
 <body>
     <div class="login-card">
         <div class="logo">
-            <img src="shield_logo.png" style="width:40px; height:40px; border-radius:10px; box-shadow:0 0 15px rgba(99,102,241,0.3);">
+            <img src="shield_logo.png"
+                style="width:40px; height:40px; border-radius:10px; box-shadow:0 0 15px rgba(99,102,241,0.3);">
             SHIELD AI
         </div>
         <h1 id="formTitle">Enterprise Authorization</h1>
         <p id="formSub">Sign in with your security credentials.</p>
-        
+
         <form id="authForm">
             <div id="nameGroup" class="input-group" style="display:none;">
                 <label>Full Name</label>
@@ -58,13 +147,23 @@
             </div>
             <button type="submit" class="btn-p" id="subBtn">Authorized Login</button>
             <div id="errMsg" class="err">Access Denied: Invalid Credentials.</div>
-            <p style="margin-top:24px; cursor:pointer; color:var(--primary); font-weight:700;" onclick="toggleMode()" id="modeToggle">New Administrator? Join Shield</p>
+            <p style="margin-top:24px; cursor:pointer; color:var(--primary); font-weight:700;" onclick="toggleMode()"
+                id="modeToggle">New Administrator? Join Shield</p>
         </form>
     </div>
 
     <script>
         lucide.createIcons();
         let isLogin = true;
+
+        // Register Service Worker for PWA
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js')
+                    .then(reg => console.log('Shield AI: Service Worker Registered'))
+                    .catch(err => console.log('Shield AI: SW Registration Failed', err));
+            });
+        }
 
         function toggleMode() {
             isLogin = !isLogin;
@@ -89,12 +188,12 @@
 
             const response = await fetch(url, {
                 method: 'POST',
-                headers: {'Content-Type': 'application/json'},
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
             });
 
             if (response.ok) {
-                if(isLogin) {
+                if (isLogin) {
                     const data = await response.json();
                     localStorage.setItem('shield_token', data.token);
                     localStorage.setItem('shield_user', data.name);
@@ -111,4 +210,5 @@
         });
     </script>
 </body>
+
 </html>

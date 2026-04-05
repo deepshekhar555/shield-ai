@@ -2,215 +2,202 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Shield AI — Pro Home</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Shield AI — Secure Terminal</title>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="styles.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
-    <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#4f46e5">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-title" content="Shield AI">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <meta name="theme-color" content="#0f172a">
+    <style>
+        .view-section { display: none; width: 100%; animation: fadeIn 0.3s ease; }
+        .view-section.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
 </head>
-<body>
-    <header class="header">
-        <div class="logo-container">
-            <img src="shield_logo.png" style="width:32px; height:32px; border-radius:8px; box-shadow:0 0 10px rgba(99,102,241,0.2);">
-            <span>SHIELD — PRO</span>
-        </div>
-        <div style="display:flex; gap:16px; align-items:center;">
-            <p id="userName" style="font-size:12px; font-weight:700; color:var(--text-muted);"></p>
-            <div style="display:flex; gap:12px;">
-                <button onclick="toggleTheme()" style="background:none; border:none; color:var(--text-muted);"><i data-lucide="moon" style="width:20px;"></i></button>
-                <button onclick="fullLogout()" style="background:none; border:none; color:var(--text-muted); cursor:pointer;"><i data-lucide="log-out" style="width:20px;"></i></button>
+<body style="margin:0; padding:0; background-color:#070a13; overflow-x:hidden;">
+    <canvas id="particleCanvas" style="position:fixed; top:0; left:0; width:100%; height:100%; z-index:-1; pointer-events:none; opacity:0.6;"></canvas>
+    <header>
+        <div class="logo-section">
+            <div style="background:linear-gradient(135deg, #6366f1, #06b6d4); padding:8px; border-radius:12px; display:flex;">
+                <i data-lucide="shield-check" style="color:white; width:22px; height:22px;"></i>
             </div>
+            <span class="shield-logo-text">SHIELD AI</span>
+        </div>
+        <div style="display:flex; align-items:center; gap:8px;">
+            <button id="pwa-install-btn" onclick="installPWA()" style="display:none; background:rgba(6, 182, 212, 0.15); border:1px solid var(--accent-cyan); color:var(--accent-cyan); padding:6px 12px; border-radius:30px; font-size:10px; font-weight:800; animation: pulse 2s infinite;">
+                <i data-lucide="download" style="width:12px; vertical-align:middle; margin-right:4px;"></i> INSTALL APP
+            </button>
+            <span id="user-display-name" style="font-size:0.75rem; font-weight:700; color:var(--text-secondary);">GUEST</span>
+            <button onclick="fullLogout()" style="background:none; border:none; color:var(--text-secondary); cursor:pointer;"><i data-lucide="log-out" style="width:18px;"></i></button>
         </div>
     </header>
 
-    <div id="onboarding" style="display:none;">
-        <i data-lucide="shield-alert" class="splash-icon"></i>
-        <h1>Activated Protection</h1>
-        <p>Shield AI neural nodes are now monitoring your global wallet traffic.</p>
-        <button class="splash-btn" onclick="closeOnboarding()">Enter Command Center</button>
-    </div>
-
-    <!-- FRAUD LOCKDOWN OVERLAY -->
-    <div id="lockdown" class="modal-overlay" style="background:rgba(220, 38, 38, 0.95); z-index:9999; display:none; backdrop-filter:blur(30px);">
-        <div style="text-align:center; color:white; padding:40px;">
-           <i data-lucide="shield-off" style="width:80px; height:80px; margin-bottom:24px; animation: pulse 1s infinite;"></i>
-           <h1 style="font-size:2.5rem; font-weight:800; margin-bottom:8px;">THREAT BLOCKED</h1>
-           <p style="font-size:1.1rem; opacity:0.9; margin-bottom:32px;">UNAUTHORIZED CLUSTER DETECTED. TRANSACTION VOIDED BY AI.</p>
-           <button class="splash-btn" onclick="document.getElementById('lockdown').style.display='none'" style="background:white; color:var(--danger); font-weight:800; border:none;">Dismiss Lockdown</button>
-        </div>
-    </div>
-
-    <!-- SCANNER MODAL -->
-    <div id="scannerModal" class="modal-overlay" style="background:#000; display:none;">
-        <div style="position:relative; width:100%; height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center;">
-            <video id="video" style="width:100%; height:100%; object-fit:cover;" autoplay playsinline></video>
-            <div class="scanner-overlay">
-                <div class="card-frame">
-                   <div class="scan-line"></div>
+    <main class="dashboard-grid">
+        <!-- 🏠 VIEW 1: OVERVIEW (Default) -->
+        <div id="overview-view" class="view-section active">
+            <div class="glass-card" style="padding:1.5rem; margin-bottom:1rem; text-align:center;">
+                <h1 style="font-size:1.5rem; font-weight:800; margin-bottom:0.5rem; color:var(--accent-cyan);">Terminal Secured</h1>
+                <p style="color:var(--text-secondary); font-size:0.9rem;">Real-time AI monitoring is active on your device.</p>
+            </div>
+            
+            <div class="glass-card" style="padding:1.2rem; display:flex; align-items:center; justify-content:space-between;">
+                <div>
+                    <h3 style="font-size:0.8rem; opacity:0.6;">THREAT SHIELD</h3>
+                    <p style="font-weight:800; color:var(--accent-emerald);">HYPER-SECURE MODE</p>
                 </div>
-                <div id="scanStatus" style="color:white; font-weight:700; margin-top:32px; text-align:center;">
-                    <p id="scanTxt">POSITIONING CARD...</p>
-                </div>
-                <button class="splash-btn" onclick="stopScanner()" style="margin-top:40px; background:rgba(255,255,255,0.1); color:white; border:1px solid rgba(255,255,255,0.3);">Cancel Secure Scan</button>
+                <i data-lucide="shield-check" style="color:var(--accent-emerald); width:32px; height:32px;"></i>
             </div>
         </div>
-    </div>
 
-    <!-- SUPPORT MODAL -->
-    <div id="helpModal" class="modal-overlay">
-        <div class="modal">
-            <h2>Support Center</h2>
-            <p style="margin: 16px 0; color:var(--text-muted); font-size:13px;">Our deep-learning nodes are monitoring your wallet 24/7. Need manual assistance?</p>
-            <button class="main-btn" onclick="closeModal()">Report a Threat</button>
-            <p style="text-align:center; margin-top:16px; font-size:11px;">Version 2.5 (Enterprise)</p>
-        </div>
-    </div>
-
-    <main class="content">
-        <!-- VIEW: DASHBOARD -->
-        <div id="v-overview" class="view active">
-            <div class="safety-card">
-                <div class="gauge-container">
-                    <svg class="gauge-svg" viewBox="0 0 100 100">
-                        <circle class="gauge-bg" cx="50" cy="50" r="45"></circle>
-                        <circle id="gaugeFill" class="gauge-progress" cx="50" cy="50" r="45"></circle>
-                    </svg>
-                    <div class="gauge-value" id="safetyVal">98</div>
-                </div>
-                <p class="safety-label">Live Safety Score</p>
+        <!-- 🔍 VIEW 2: SCAN -->
+        <div id="scan-view" class="view-section">
+            <div style="margin-bottom:1rem;">
+                <h2 style="font-weight:800;">NEURAL SCANNER</h2>
+                <p style="opacity:0.6; font-size:0.8rem;">Run AI audit on any financial transaction.</p>
             </div>
-
-            <div class="action-card" style="background:rgba(99,102,241,0.1); border:1px solid var(--primary);">
-                <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <div>
-                        <p style="font-size:11px; font-weight:700; color:var(--primary);">AI SHIELD STATUS: ONLINE</p>
-                        <p id="securityTip" style="font-size:13px; font-weight:600; margin-top:4px;">“Scanning transaction clusters for real-time fraud mitigation.”</p>
+            <div class="glass-card audit-container">
+                <div class="scanner-area">
+                    <div class="scanner-laser"></div>
+                    <div class="virtual-card">
+                        <div class="chip"></div>
+                        <div class="card-line" style="width:80%;"></div>
+                        <div class="card-line" style="width:50%;"></div>
                     </div>
                 </div>
-            </div>
-
-            <div class="section-title" style="margin-top:24px; display:flex; justify-content:space-between; align-items:center;">
-                <span>Recent Activity</span>
-                <div style="display:flex;gap:8px;">
-                    <button id="refreshBtn" onclick="refreshAlerts()" title="Reload from server"
-                        style="background:rgba(99,102,241,0.1); border:1px solid var(--primary); color:var(--primary);
-                               padding:6px 12px; border-radius:20px; cursor:pointer; display:flex; align-items:center;
-                               gap:6px; font-size:11px; font-weight:700; transition:0.2s;">
-                        <i data-lucide="refresh-cw" style="width:13px; height:13px;" id="refreshIcon"></i> REFRESH
-                    </button>
-                    <button id="clearBtn" onclick="clearAllAlerts()" title="Delete all activity"
-                        style="background:rgba(239,68,68,0.1); border:1px solid var(--danger); color:var(--danger);
-                               padding:6px 12px; border-radius:20px; cursor:pointer; display:flex; align-items:center;
-                               gap:6px; font-size:11px; font-weight:700; transition:0.2s;">
-                        <i data-lucide="trash-2" style="width:13px; height:13px;"></i> CLEAR ALL
-                    </button>
-                </div>
-            </div>
-            <div id="txn-list" style="margin-bottom:80px;"></div>
-
-        </div>
-
-        <!-- VIEW: AUDIT -->
-        <div id="v-verify" class="view">
-            <div class="section-title">AI Risk Scorer</div>
-            <div class="action-card" style="background:rgba(99,102,241,0.08); border:1px solid var(--primary); margin-bottom:24px; text-align:center;">
-                <i data-lucide="cpu" style="width:28px; height:28px; color:var(--primary); margin-bottom:8px;"></i>
-                <p style="font-weight:800; font-size:13px; color:var(--primary);">XGBoost ML ENGINE — ACTIVE</p>
-                <p style="font-size:11px; color:var(--text-muted); margin-top:4px;">Trained on 284,807 real bank transactions · 99.1% accuracy</p>
-            </div>
-
-            <div class="action-card">
                 <form id="auditForm">
-                    <div class="input-group">
-                        <label>Transaction Amount (₹)</label>
-                        <input type="number" step="0.01" id="amt" class="input-box" placeholder="Enter transaction amount..." required>
+                    <div class="form-group">
+                        <label>SCAN AMOUNT (₹)</label>
+                        <input type="number" step="0.01" id="amt" placeholder="0.00" required>
                     </div>
-                    <div class="input-group">
-                        <label>Time of Transaction</label>
-                        <select id="txnHour" class="input-box">
-                            <option value="10">Morning (6AM–12PM)</option>
-                            <option value="14">Afternoon (12PM–6PM)</option>
-                            <option value="20">Evening (6PM–10PM)</option>
-                            <option value="2">Late Night (10PM–6AM) ⚠️</option>
+                    <div class="form-group">
+                        <label>TIME WINDOW</label>
+                        <select id="txnHour">
+                            <option value="10">SAFE HOURS (9AM-6PM)</option>
+                            <option value="20">OFF HOURS (6PM-11PM)</option>
+                            <option value="2">DANGER HOURS (11PM-5AM)</option>
                         </select>
                     </div>
-                    <div class="input-group">
-                        <label>Card Type</label>
-                        <select id="cardType" class="input-box">
-                            <option value="domestic">Domestic Card (India)</option>
-                            <option value="international">International Card ⚠️</option>
-                            <option value="upi">UPI / Net Banking</option>
+                    <div class="form-group" style="margin-bottom:2rem;">
+                        <label>AUTHENTICATION</label>
+                        <select id="cardType">
+                            <option value="domestic">DOMESTIC CHIP</option>
+                            <option value="international">INTERNATIONAL / CNP</option>
                         </select>
                     </div>
-                    <button type="submit" class="main-btn" id="subBtn"><i data-lucide="shield-check"></i> Analyze Transaction Risk</button>
-                    <div id="resBox" style="display:none; margin-top:24px; padding:16px; border-radius:16px; text-align:center; font-weight:800; font-size:14px;"></div>
+                    <button type="submit" class="audit-btn" id="subBtn">IDENTIFY THREAT</button>
+                    <div id="resBox" style="display:none; margin-top:1.5rem; padding:1.2rem; border-radius:1rem; text-align:center; font-weight:800; border:1px solid rgba(255,255,255,0.05);"></div>
                 </form>
             </div>
         </div>
 
-
-        <!-- VIEW: SENTRY -->
-        <div id="v-sentry" class="view">
-            <div class="section-title">Merchant Link Sentinel</div>
-            <div class="action-card">
-                <div class="input-group">
-                    <label>Merchant Website URL</label>
-                    <input type="text" id="urlInput" class="input-box" placeholder="e.g. cheap-iphones.buy">
-                </div>
-                <button class="main-btn" onclick="auditMerchant()">
-                    <i data-lucide="globe"></i> Audit Merchant Trust
-                </button>
-                <div id="sentryRes" style="display:none; margin-top:16px; padding:16px; border-radius:16px; text-align:center; font-weight:700;"></div>
+        <!-- 📜 VIEW 3: FEED -->
+        <div id="history-view" class="view-section">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+                <h2 style="font-weight:800;">AUDIT HISTORY</h2>
+                <button onclick="clearAllAlerts()" style="background:none; border:none; color:var(--accent-rose); opacity:0.6;"><i data-lucide="trash-2" style="width:18px;"></i></button>
             </div>
-
-            <div class="section-title" style="margin-top:32px;">Identity Leak Guard</div>
-            <div class="action-card">
-                <button class="main-btn" onclick="runIdentityScan()" style="background:rgba(239, 68, 68, 0.1); color:var(--danger); border:1.5px solid var(--danger);">
-                    <i data-lucide="alert-triangle"></i> Run Identity Scan
-                </button>
-                <div id="idScanRes" style="display:none; margin-top:16px; padding:16px; border-radius:16px; text-align:center; font-weight:700;"></div>
+            <div style="margin-bottom: 1rem; position: relative;">
+                <input type="text" id="txnSearch" placeholder="Search Transactions..." style="width:100%; border-radius:12px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); padding:10px 40px 10px 15px; color:white; font-size:0.85rem;" oninput="filterAlerts()">
+                <i data-lucide="search" style="position:absolute; right:12px; top:50%; transform:translateY(-50%); width:18px; opacity:0.5;"></i>
+            </div>
+            <div class="glass-card" style="padding:1rem; min-height:400px;">
+                <div id="txn-list"></div>
             </div>
         </div>
 
-        <!-- VIEW: STATS -->
-        <div id="v-stats" class="view">
-            <div class="section-title">Risk Telemetry Trends</div>
-            <div class="action-card" style="height:320px;">
-                <canvas id="threatChart"></canvas>
+        <!-- 📈 VIEW 4: ANALYTICS -->
+        <div id="insights-view" class="view-section">
+            <div style="margin-bottom:1rem;">
+                <h2 style="font-weight:800;">NEURAL RISK FEED</h2>
+                <p style="opacity:0.6; font-size:0.8rem;">Live AI telemetry from global clusters.</p>
+            </div>
+            <div class="glass-card" style="padding:1.5rem; margin-bottom:1.5rem;">
+                <div style="height:220px;">
+                    <canvas id="threatChart"></canvas>
+                </div>
+            </div>
+
+            <div style="margin-bottom:1rem;">
+                <h2 style="font-weight:800;">DISCRETE AUDIT VECTORS</h2>
+                <p style="opacity:0.6; font-size:0.8rem;">Transaction-by-transaction risk markers.</p>
+            </div>
+            <div class="glass-card" style="padding:1.5rem; margin-bottom:2rem;">
+                <div style="height:180px;">
+                    <canvas id="discreteChart"></canvas>
+                </div>
             </div>
         </div>
 
-        <!-- VIEW: ACCOUNT -->
-        <div id="v-config" class="view">
-            <div class="section-title">Security Center</div>
-            <div class="action-card">
-                <div style="display:flex; justify-content:space-between; margin-bottom:20px;">
-                    <div><p style="font-weight:700; font-size:14px;">Real-Time Shield</p></div>
-                    <input type="checkbox" checked style="accent-color:var(--primary); width:20px;">
+        <!-- 👤 VIEW 5: SAFE (PROFILE) -->
+        <div id="profile-view" class="view-section">
+            <div style="text-align:center; padding:2rem 0;">
+                <div style="width:100px; height:100px; background:var(--glass-bg); border-radius:50%; margin: 0 auto 1.5rem; display:flex; align-items:center; justify-content:center; border:2px solid var(--accent-cyan);">
+                    <i data-lucide="user" style="width:50px; height:50px; color:var(--accent-cyan);"></i>
                 </div>
-                <div style="display:flex; justify-content:space-between; margin-bottom:20px;">
-                    <div><p style="font-weight:700; font-size:14px;">Dark Operations Mode</p></div>
-                    <input type="checkbox" id="themeToggle" onchange="toggleTheme()" style="accent-color:var(--primary); width:20px;">
+                <h1 id="profile-name" style="font-size:1.5rem; font-weight:800;">Deep Halder</h1>
+                <p style="color:var(--text-secondary);">SHIELD ID: PRO-9901</p>
+                
+                <div class="glass-card" style="margin-top:2rem; padding:1.2rem; text-align:left;">
+                    <div style="display:flex; justify-content:space-between; margin-bottom:1rem;"><span>KYC Status</span><span style="color:var(--accent-emerald);">VERIFIED</span></div>
+                    <div style="display:flex; justify-content:space-between; margin-bottom:1rem;"><span>Device Trust</span><span style="color:var(--accent-emerald);">HIGH</span></div>
+                    <div style="display:flex; justify-content:space-between;"><span>Location</span><span style="opacity:0.6;">India</span></div>
                 </div>
+                
+                <button onclick="shareSecureID()" class="audit-btn" style="margin-top:2rem; background:rgba(99, 102, 241, 0.1); color:var(--accent-indigo); border:1px solid var(--accent-indigo); margin-bottom:1rem;">
+                    <i data-lucide="share-2" style="width:18px; margin-right:8px; vertical-align:middle;"></i> SHARE SECURE ID
+                </button>
+                <button onclick="fullLogout()" class="audit-btn" style="background:rgba(244, 63, 94, 0.1); color:var(--accent-rose); border:1px solid var(--accent-rose);">SECURE LOGOUT</button>
             </div>
-            <button class="main-btn" onclick="exportPrivateLog()"><i data-lucide="download"></i> Download Audit History</button>
         </div>
     </main>
 
-    <nav class="nav-bar">
-        <a href="#" class="tab-btn active" id="t-overview" onclick="navigate('overview')"><i data-lucide="wallet"></i></a>
-        <a href="#" class="tab-btn" id="t-verify" onclick="navigate('verify')"><i data-lucide="camera"></i></a>
-        <a href="#" class="tab-btn" id="t-sentry" onclick="navigate('globe')"><i data-lucide="globe"></i></a>
-        <a href="#" class="tab-btn" id="t-stats" onclick="navigate('stats')"><i data-lucide="bar-chart-3"></i></a>
-        <a href="#" class="tab-btn" id="t-config" onclick="navigate('config')"><i data-lucide="user"></i></a>
+    <!-- NATIVE MOBILE TAB BAR (SPA NAV) -->
+    <nav class="mobile-nav">
+        <div class="nav-item active" onclick="navigate('overview', this)">
+            <i data-lucide="layout-grid"></i>
+            <span>Main</span>
+        </div>
+        <div class="nav-item" onclick="navigate('scan', this)">
+            <i data-lucide="fingerprint"></i>
+            <span>Scan</span>
+        </div>
+        <div class="nav-item" onclick="navigate('history', this)">
+            <i data-lucide="activity"></i>
+            <span>Feed</span>
+        </div>
+        <div class="nav-item" onclick="navigate('insights', this)">
+            <i data-lucide="trending-up"></i>
+            <span>Trends</span>
+        </div>
+        <div class="nav-item" onclick="navigate('profile', this)">
+            <i data-lucide="shield"></i>
+            <span>Safe</span>
+        </div>
     </nav>
 
-    <script src="script.js"></script>
+    <!-- SYSTEM OVERLAYS -->
+    <div id="lockdown" class="modal-overlay" style="background:rgba(244, 63, 94, 0.98); display:none; flex-direction:column; align-items:center; justify-content:center; padding:2rem; z-index:200000; backdrop-filter:blur(30px);">
+        <i data-lucide="shield-alert" style="width:100px; height:100px; color:white; margin-bottom:1.5rem;"></i>
+        <h1 style="font-size:1.8rem; font-weight:900; color:white; text-align:center;">THREAT NEUTRALIZED</h1>
+        <button onclick="document.getElementById('lockdown').style.display='none'" class="audit-btn" style="background:white; color:var(--accent-rose); width:200px; margin-top:2rem;">RESUME</button>
+    </div>
+
+    <script src="script.js?v=2.4"></script>
+    <script>
+        function navigate(viewId, element) {
+            // 1. Hide all views
+            document.querySelectorAll('.view-section').forEach(v => v.classList.remove('active'));
+            // 2. Show selected view
+            document.getElementById(viewId + '-view').classList.add('active');
+            // 3. Update Nav Active State
+            document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active'));
+            element.classList.add('active');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // REAL-TIME ANALYTICS (Handled by script.js)
+    </script>
+    </script>
 </body>
 </html>
